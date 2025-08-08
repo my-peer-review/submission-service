@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routers.v1 import assignment_router
+from app.routers.v1 import assignment_router, health_router
 
 def create_app() -> FastAPI:
     app = FastAPI(
@@ -17,6 +17,8 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    app.include_router(health_router.router, prefix="/api/v1", tags=["health"])
 
     app.include_router(assignment_router.router, prefix="/api/v1/assignments", tags=["Assignments"])
 
