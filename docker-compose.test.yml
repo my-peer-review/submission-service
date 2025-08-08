@@ -1,0 +1,33 @@
+version: "3.9"
+
+services:
+  assignment-service:
+    build:
+      context: .
+    container_name: assignment-service
+    ports:
+      - "5050:5050"
+    env_file:
+      - .env.test
+    secrets:
+      - jwt_public.pem
+      - jwt_private.pem
+    depends_on:
+      - assignments-db
+
+  assignments-db:
+    image: mongo:6.0
+    container_name: assignments-db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-test-data:/data/db
+
+volumes:
+  mongo-test-data:
+
+secrets:
+  jwt_public.pem:
+    file: ./secrets/public.pem
+  jwt_private.pem:
+    file: ./secrets/private.pem
