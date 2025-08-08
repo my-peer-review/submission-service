@@ -37,7 +37,7 @@ pipeline {
           # 24 tentativi x 5s = ~2 minuti (coerente col timeout Jenkins)
           i=0
           while [ $i -lt 24 ]; do
-            if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+            if curl -fsS http://localhost:5050/health >/dev/null 2>&1; then
               echo "✅ FastAPI è su."
               exit 0
             fi
