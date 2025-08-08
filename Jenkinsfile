@@ -30,18 +30,22 @@ pipeline {
     stage('Wait for FastAPI to be ready') {
       options { timeout(time: 2, unit: 'MINUTES') }
       steps {
-        echo "⏳ Aspetto che FastAPI sia disponibile..."
         sh '''
-          set -euo pipefail
-          for i in {1..24}; do
-            if curl -sf http://localhost:5050/docs > /dev/null; then
-              echo "✅ FastAPI è pronta!"
+          set -eu
+          echo "⏳ Aspetto che FastAPI sia disponibile..."
+
+          # 24 tentativi x 5s = ~2 minuti (coerente col timeout Jenkins)
+          i=0
+          while [ $i -lt 24 ]; do
+            if curl -fsS http://localhost:8000/health >/dev/null 2>&1; then
+              echo "✅ FastAPI è su."
               exit 0
             fi
-            echo "⏳ Attendo FastAPI (tentativo $i)..."
+            i=$((i+1))
             sleep 5
           done
-          echo "❌ FastAPI non è pronta entro il tempo previsto."
+
+          echo "❌ FastAPI non è partito entro 2 minuti"
           exit 1
         '''
       }
