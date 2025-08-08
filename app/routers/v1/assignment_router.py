@@ -7,12 +7,6 @@ from app.schemas.context import UserContext
 
 router = APIRouter()
 
-@router.get("/health")
-async def health_check():
-    """
-    Simple health endpoint to verify service is running.
-    """
-    return {"status": "ok"}
 
 @router.post("/")
 async def create_assignment(
@@ -43,9 +37,3 @@ async def get_assignment(
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
     
-@router.get("/health")
-async def health_check():
-    """
-    Simple health endpoint to verify service is running.
-    """
-    return {"status": "ok"}
