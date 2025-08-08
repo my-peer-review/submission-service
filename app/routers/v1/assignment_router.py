@@ -34,7 +34,3 @@ async def get_assignment(
         return result
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
-    
-@router.get("/health")
-async def health_check():
-    return {"status": "ok"}
