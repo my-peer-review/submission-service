@@ -1,10 +1,18 @@
+from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException
-from app.services import assignment as assignment_service  # 👈 rinominato per evitare ambiguità
+from app.services import assignment as assignment_service
 from app.core.security import get_current_user
 from app.schemas.assignment import AssignmentCreate
 from app.schemas.context import UserContext
 
 router = APIRouter()
+
+@router.get("/health")
+async def health_check():
+    """
+    Simple health endpoint to verify service is running.
+    """
+    return {"status": "ok"}
 
 @router.post("/")
 async def create_assignment(
@@ -24,7 +32,7 @@ async def list_assignments(user: UserContext = Depends(get_current_user)):
 
 @router.get("/{assignment_id}")
 async def get_assignment(
-    assignment_id: str,
+    assignment_id: UUID,
     user: UserContext = Depends(get_current_user)
 ):
     try:
