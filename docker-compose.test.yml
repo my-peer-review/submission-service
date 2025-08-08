@@ -13,7 +13,8 @@ services:
       - jwt_public.pem
       - jwt_private.pem
     depends_on:
-      - assignments-db
+      assignments-db:
+        condition: service_healthy
 
   assignments-db:
     image: mongo:6.0
@@ -22,6 +23,12 @@ services:
       - "27017:27017"
     volumes:
       - mongo-test-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
 volumes:
   mongo-test-data:

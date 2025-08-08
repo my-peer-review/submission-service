@@ -71,7 +71,7 @@ pipeline {
   post {
     always {
       echo "🧼 Pulizia finale..."
-      deleteDir() // Pulisce la workspace
+      //deleteDir() // Pulisce la workspace
     }
     success {
       echo "✅ Build e test completati con successo!"
