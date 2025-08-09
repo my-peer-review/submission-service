@@ -17,7 +17,7 @@ services:
         condition: service_healthy
 
   assignments-db:
-    image: mongo:5.0
+    image: mongo:4.4
     container_name: assignments-db
     ports:
       - "27017:27017"
