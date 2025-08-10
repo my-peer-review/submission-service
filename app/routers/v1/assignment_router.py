@@ -1,4 +1,3 @@
-from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.responses import JSONResponse
 from app.services import assignment as assignment_service
@@ -40,7 +39,7 @@ async def list_assignments(user: UserContext = Depends(get_current_user)):
 
 @router.get("/assignments/{assignment_id}")
 async def get_assignment(
-    assignment_id: UUID,
+    assignment_id: str,
     user: UserContext = Depends(get_current_user)
 ):
     try:
@@ -53,7 +52,7 @@ async def get_assignment(
     
 @router.delete("/assignments/{assignment_id}")
 async def delete_assignment_stub(
-    assignment_id: UUID,
+    assignment_id: str,
     user: UserContext = Depends(get_current_user),
 ):
     # eventuale check permessi minimo
