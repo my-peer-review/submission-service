@@ -30,12 +30,11 @@ services:
     volumes:
       - mongo-test-data:/data/db
     healthcheck:
-      healthcheck:
-        test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/27017"]
-        interval: 5s
-        timeout: 3s
-        retries: 10
-        start_period: 5s
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/27017"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
 
 volumes:
   mongo-test-data:
