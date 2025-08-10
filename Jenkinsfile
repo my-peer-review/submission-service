@@ -27,30 +27,6 @@ pipeline {
       }
     }
 
-    stage('Wait for FastAPI to be ready') {
-      options { timeout(time: 2, unit: 'MINUTES') }
-      steps {
-        sh '''
-          set -eu
-          echo "⏳ Aspetto che FastAPI sia disponibile..."
-
-          # 24 tentativi x 5s = ~2 minuti (coerente col timeout Jenkins)
-          i=0
-          while [ $i -lt 24 ]; do
-            if curl -fsS http://localhost:5050/api/v1/health >/dev/null 2>&1; then
-              echo "✅ FastAPI è su."
-              exit 0
-            fi
-            i=$((i+1))
-            sleep 5
-          done
-
-          echo "❌ FastAPI non è partito entro 2 minuti"
-          exit 1
-        '''
-      }
-    }
-
     stage('Run API Tests with Newman') {
       steps {
         sh '''
