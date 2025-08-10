@@ -27,8 +27,8 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Status code is 200\", function () {\r",
-							"    pm.response.to.have.status(200);\r",
+							"pm.test(\"Status code is 201\", function () {\r",
+							"    pm.response.to.have.status(201);\r",
 							"});\r",
 							"\r",
 							"pm.test(\"Content-Type è JSON\", function () {\r",
@@ -38,7 +38,19 @@
 							"pm.test(\"La risposta ha il campo 'message'\", function () {\r",
 							"    let jsonData = pm.response.json();\r",
 							"    pm.expect(jsonData).to.have.property(\"message\");\r",
-							"});"
+							"});\r",
+							"\r",
+							"pm.test(\"Header Location presente\", function () {\r",
+							"  pm.expect(pm.response.headers.has(\"Location\")).to.be.true;\r",
+							"});\r",
+							"\r",
+							"pm.test(\"Location punta a /assignments/<uuid>\", function () {\r",
+							"  const loc = pm.response.headers.get(\"Location\");\r",
+							"  pm.expect(loc).to.match(/\\/api\\/v1\\/assignments\\/[0-9a-f-]{36}$/i);\r",
+							"});\r",
+							"\r",
+							"const location_assignament = pm.response.headers.get(\"Location\");\r",
+							"pm.environment.set(\"assignment_id\", location_assignament.split(\"/\").pop());"
 						],
 						"type": "text/javascript",
 						"packages": {}
@@ -402,6 +414,14 @@
 						"health"
 					]
 				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete assignment",
+			"request": {
+				"method": "DELETE",
+				"header": []
 			},
 			"response": []
 		}

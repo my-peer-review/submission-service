@@ -4,19 +4,20 @@ from app.schemas.assignment import AssignmentCreate, Assignment
 from app.schemas.context import UserContext
 from app.database.assignment_repo import assignment_repo
 
-async def create_assignment(data: AssignmentCreate, user: UserContext):
+async def create_assignment(data: AssignmentCreate, user: UserContext) -> str:
     if "teacher" not in user.role:
         raise PermissionError("Only teachers can create assignments")
 
+    new_id = str(uuid4())
     assignment_dict = {
-        "_id": str(uuid4()),
+        "_id": new_id,
         "createdAt": datetime.now(timezone.utc),
         "teacherId": user.user_id,
-        **data.dict()
+        **data.model_dump()
     }
 
     await assignment_repo.create(assignment_dict)
-    return {"message": "Assignment created successfully"}
+    return new_id
 
 async def list_assignments(user: UserContext):
     if "teacher" in user.role:
