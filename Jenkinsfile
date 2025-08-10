@@ -4,7 +4,7 @@ pipeline {
   environment {
     ENV = "test"
     COMPOSE_FILE = "docker-compose.test.yml"
-    TEST_SECRETS_PATH = "/home/jenkins_user/secrets/assignment-test"
+    TEST_SECRETS_PATH = "/home/jenkins-user/secrets/assignment-test"
   }
 
   stages {
