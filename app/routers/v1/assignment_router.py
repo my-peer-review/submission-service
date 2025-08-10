@@ -51,3 +51,14 @@ async def get_assignment(
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
     
+@router.delete("/assignments/{assignment_id}")
+async def delete_assignment_stub(
+    assignment_id: UUID,
+    user: UserContext = Depends(get_current_user),
+):
+    # eventuale check permessi minimo
+    if "teacher" not in user.role:
+        raise HTTPException(status_code=403, detail="Only teachers can delete assignments")
+    # stub esplicito
+    raise HTTPException(status_code=501, detail="Deletion not implemented yet")
+    
