@@ -26,5 +26,4 @@ class AssignmentRepository:
         result = await self.collection.delete_one({"_id": str(assignment_id)})
         return result.deleted_count > 0
 
-# Istanza globale
 assignment_repo = AssignmentRepository()
