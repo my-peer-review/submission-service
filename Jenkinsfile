@@ -51,10 +51,10 @@ pipeline {
       
     }
     success {
-      echo "✅ Build e test completati con successo!"
+      echo "Build e test completati con successo!"
     }
     failure {
-      echo "❌ Qualcosa è andato storto."
+      echo "Qualcosa è andato storto."
     }
   }
 }
