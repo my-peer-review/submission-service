@@ -1,8 +1,8 @@
 from motor.motor_asyncio import AsyncIOMotorClient
-from app.core.config import settings  # useremo la configurazione da qui
+from app.core.config import settings
 
-client = AsyncIOMotorClient(settings.mongo_uri, uuidRepresentation="standard")  # es: "mongodb://assignments-db:27017"
-db = client[settings.mongo_db_name]             # es: "assignmentsDB"
+client = AsyncIOMotorClient(settings.mongo_uri, uuidRepresentation="standard") 
+db = client[settings.mongo_db_name]             
 
 class AssignmentRepository:
     def __init__(self):
