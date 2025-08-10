@@ -7,7 +7,6 @@ from app.schemas.context import UserContext
 
 router = APIRouter()
 
-
 @router.post("/assignments", status_code=status.HTTP_201_CREATED)
 async def create_assignment(
     assignment: AssignmentCreate,
