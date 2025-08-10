@@ -8,7 +8,7 @@ from app.schemas.context import UserContext
 router = APIRouter()
 
 
-@router.post("/")
+@router.post("/assignments")
 async def create_assignment(
     assignment: AssignmentCreate,
     user: UserContext = Depends(get_current_user)
@@ -19,12 +19,12 @@ async def create_assignment(
         raise HTTPException(status_code=403, detail=str(e))
 
 
-@router.get("/")
+@router.get("/assignments")
 async def list_assignments(user: UserContext = Depends(get_current_user)):
     return await assignment_service.list_assignments(user)
 
 
-@router.get("/{assignment_id}")
+@router.get("/assignments/{assignment_id}")
 async def get_assignment(
     assignment_id: UUID,
     user: UserContext = Depends(get_current_user)
