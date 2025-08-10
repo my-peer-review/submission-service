@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from app.services import assignment as assignment_service
 from app.core.security import get_current_user
@@ -16,12 +16,8 @@ async def create_assignment(
     try:
         new_id = await assignment_service.create_assignment(assignment, user)
 
-        # Costruisci l’URL della risorsa creata
         location = f"/api/v1/assignments/{new_id}"
-        # oppure se la GET ha name="get_assignment_by_id":
-        # location = request.url_for("get_assignment_by_id", assignment_id=new_id)
 
-        # Risposta con header Location e body JSON
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
             content={"message": "Assignment created successfully"},
@@ -58,11 +54,9 @@ async def delete_assignment(
     try:
         deleted = await assignment_service.delete_assignment(assignment_id, user)
         if not deleted:
-            # allineato al get: 404 se la risorsa non esiste
             raise HTTPException(status_code=404, detail="Assignment not found")
-        # 204 No Content: nessun body in risposta
+
         return
     except PermissionError as e:
-        # allineato al get: 403 su permessi insufficienti
         raise HTTPException(status_code=403, detail=str(e))
     
