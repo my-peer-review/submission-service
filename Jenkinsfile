@@ -1,7 +1,10 @@
 pipeline {
   agent any
-  options { disableConcurrentBuilds() }
 
+  options {
+    lock(resource: 'ports-for-test-assignment')
+  }
+  
   environment {
     ENV = "test"
     COMPOSE_FILE = "docker-compose.test.yml"
