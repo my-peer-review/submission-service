@@ -4,7 +4,6 @@ services:
   assignment-service:
     build:
       context: .
-    container_name: assignment-service
     ports:
       - "5050:5050"
     env_file:
@@ -24,7 +23,6 @@ services:
 
   assignments-db:
     image: mongo:8.0
-    container_name: assignments-db
     ports:
       - "27017:27017"
     volumes:
