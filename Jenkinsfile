@@ -23,7 +23,7 @@ pipeline {
 
     stage('Build & start test environment') {
       steps {
-        sh 'docker-compose -f $COMPOSE_FILE up -d --build'
+        sh 'docker compose -f $COMPOSE_FILE up -d --build'
       }
     }
 
