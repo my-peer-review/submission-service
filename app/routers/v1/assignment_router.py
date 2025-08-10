@@ -19,7 +19,7 @@ async def create_assignment(
 
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
-            content={"message": "Assignment created successfully"},
+            content={"message": "Assignment created successfully."},
             headers={"Location": str(location)}
         )
 
