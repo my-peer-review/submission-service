@@ -609,8 +609,7 @@
 					"script": {
 						"exec": [
 							"pm.test(\"DELETE not implemented\", () => {\r",
-							"  pm.expect(pm.response.code).to.eql(501);\r",
-							"  pm.expect(pm.response.json().detail).to.match(/not implemented/i);\r",
+							"  pm.expect(pm.response.code).to.eql(204);\r",
 							"});"
 						],
 						"type": "text/javascript",

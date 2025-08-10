@@ -41,6 +41,16 @@ async def get_assignment(assignment_id: str, user: UserContext):
 
     return Assignment(**_from_mongo(doc))
 
+async def delete_assignment(assignment_id: str, user: UserContext) -> bool:
+    if "teacher" not in user.role:
+        raise PermissionError("Only teachers can delete assignments")
+
+    deleted = await assignment_repo.delete(assignment_id)
+    if not deleted:
+        return False
+
+    return True
+
 def _from_mongo(doc: dict) -> dict:
     doc["id"] = str(doc["_id"])
     del doc["_id"]

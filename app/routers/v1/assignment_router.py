@@ -50,14 +50,19 @@ async def get_assignment(
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
     
-@router.delete("/assignments/{assignment_id}")
-async def delete_assignment_stub(
+@router.delete("/assignments/{assignment_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_assignment(
     assignment_id: str,
     user: UserContext = Depends(get_current_user),
 ):
-    # eventuale check permessi minimo
-    if "teacher" not in user.role:
-        raise HTTPException(status_code=403, detail="Only teachers can delete assignments")
-    # stub esplicito
-    raise HTTPException(status_code=501, detail="Deletion not implemented yet")
+    try:
+        deleted = await assignment_service.delete_assignment(assignment_id, user)
+        if not deleted:
+            # allineato al get: 404 se la risorsa non esiste
+            raise HTTPException(status_code=404, detail="Assignment not found")
+        # 204 No Content: nessun body in risposta
+        return
+    except PermissionError as e:
+        # allineato al get: 403 su permessi insufficienti
+        raise HTTPException(status_code=403, detail=str(e))
     
