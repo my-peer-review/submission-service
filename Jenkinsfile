@@ -1,12 +1,6 @@
 pipeline {
   agent any
 
-  options {
-    ansiColor('xterm')
-    timestamps()
-    timeout(time: 30, unit: 'MINUTES')
-  }
-
   environment {
     ENV = 'unit-test'
     CI_IMAGE_NAME = 'assignments-pytest'
