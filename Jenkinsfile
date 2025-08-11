@@ -1,31 +1,10 @@
 pipeline {
   agent any
 
-  // Evita il checkout automatico (che falliva sulla pulizia) e lo gestiamo noi.
-  options {
-    skipDefaultCheckout(true)
-  }
-
   stages {
 
-    stage('Clean & Checkout') {
-      steps {
-        // rimuovi eventuali residui con permessi strani prima del checkout
-        sh '''
-          set -eux
-          # prova "soft"
-          rm -rf .pytest_cache || true
-          # fallback: usa un container root per pulire la cartella di lavoro
-          docker run --rm -v "$PWD:/ws" alpine:3.20 sh -c 'rm -rf /ws/.pytest_cache || true'
-        '''
-        deleteDir()
-        checkout scm
-      }
-    }
 
-    /******************************
-     * UNIT TESTS (ENV=unit-test)
-     ******************************/
+    // UNIT TESTS (ENV=unit-test)
     stage('Unit Tests') {
       environment {
         ENV = 'unit-test'
@@ -37,7 +16,6 @@ pipeline {
             echo "Costruzione immagine da Dockerfile.unit..."
             sh '''
               set -eux
-              rm -rf .pytest_cache || true
               docker build -t "${IMAGE_NAME}" -f Dockerfile.unit .
             '''
           }
@@ -56,11 +34,20 @@ pipeline {
           }
         }
       }
+
+      post {
+        always {
+          sh '''
+            set -eux
+            chmod -R u+rwX .pytest_cache || true
+            rm -rf .pytest_cache || true
+          '''
+        }
+      }
     }
 
-    /************************************
-     * INTEGRATION TESTS (ENV=integration-test)
-     ************************************/
+
+    // INTEGRATION TESTS (ENV=local-integration)
     stage('Integration Tests') {
       options {
         lock(resource: 'ports-for-test-assignment')
@@ -105,11 +92,10 @@ pipeline {
       }
       post {
         always {
-          echo "Pulizia finale..."
+          echo "Pulizia ambiente di integrazione..."
           sh '''
             set -eux
-            docker compose -p "$COMPOSE_PROJECT_NAME" -f "$COMPOSE_FILE" down
-            rm -rf .pytest_cache || true
+            docker compose -p "$COMPOSE_PROJECT_NAME" -f "$COMPOSE_FILE" down || true
           '''
           deleteDir()
         }
