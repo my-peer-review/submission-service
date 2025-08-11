@@ -11,16 +11,13 @@ pipeline {
         IMAGE_NAME = 'assignments-pytest'
       }
 
-      steps {
-        sh 'sudo rm -rf .pytest_cache || true'
-        deleteDir()
-      }
-      
       stages {
         stage('Build CI Image') {
           steps {
             echo "Costruzione immagine da Dockerfile.unit..."
+            deleteDir()
             sh '''
+              sh 'sudo rm -rf .pytest_cache || true'
               docker build -t ${IMAGE_NAME} -f Dockerfile.unit .
             '''
           }
