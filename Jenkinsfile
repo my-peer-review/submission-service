@@ -4,7 +4,7 @@ pipeline {
   environment {
     ENV = 'unit-test'
     CI_IMAGE_NAME = 'assignments-pytest'
-    APP_IMAGE_NAME = 'tuo-utente/app-image' // es: dockerhubuser/app
+    APP_IMAGE_NAME = 'ale175/service-assignment' // es: dockerhubuser/app
     COMMIT = "${env.GIT_COMMIT?.take(7) ?: 'local'}"
   }
 
