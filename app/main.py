@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from app.core.config import settings
-from app.repositories.mongo_assignment import MongoAssignmentRepository
+from app.database.mongo_assignment import MongoAssignmentRepository
 from app.routers.v1 import assignment_router, health_router
 
 def create_app() -> FastAPI:
