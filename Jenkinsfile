@@ -3,7 +3,6 @@ pipeline {
 
   stages {
 
-
     // UNIT TESTS (ENV=unit-test)
     stage('Unit Tests') {
       environment {
