@@ -2,11 +2,13 @@
 from datetime import datetime, timezone
 from typing import Sequence, Optional, List
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from app.database.assignment import AssignmentRepo
-from app.schemas.assignment import Assignment, AssignmentCreate
 from uuid import uuid4
 
-class MongoAssignmentRepository(AssignmentRepo):
+from app.database.assignment import AssignmentRepo
+from app.schemas.assignment import Assignment, AssignmentCreate
+
+
+class MongoAssignmentRepository(AssignmentRepo):  # ⬅️ ora sottoclasse dell'ABC
     def __init__(self, db: AsyncIOMotorDatabase):
         self.col = db["assignments"]
 
@@ -15,7 +17,7 @@ class MongoAssignmentRepository(AssignmentRepo):
             id=str(d["_id"]),
             createdAt=d["createdAt"],
             teacherId=d["teacherId"],
-            **{k: v for k, v in d.items() if k not in {"_id","createdAt","teacherId"}}
+            **{k: v for k, v in d.items() if k not in {"_id", "createdAt", "teacherId"}}
         )
 
     def _to_doc(self, a_id: str, data: AssignmentCreate, teacher_id: str) -> dict:
