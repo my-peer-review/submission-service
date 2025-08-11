@@ -16,7 +16,7 @@ class FakeAssignmentRepo:
         from uuid import uuid4
         new_id = str(uuid4())
         a = Assignment(
-            id=new_id,
+            assignmentId=new_id,
             createdAt=datetime.now(timezone.utc),
             teacherId=teacher_id,
             **data.model_dump(),
@@ -95,7 +95,7 @@ async def test_list_for_teacher(repo, teacher, other_teacher):
     _  = await repo.create(_make_create(title="C"), teacher_id=other_teacher.user_id)
 
     items = await AssignmentService.list_assignments(teacher, repo)
-    ids = {a.id for a in items}
+    ids = {a.assignmentId for a in items}
     titles = {a.title for a in items}
     assert {a1, a2}.issubset(ids)
     assert titles == {"A", "B"}
