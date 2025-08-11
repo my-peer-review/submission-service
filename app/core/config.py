@@ -22,10 +22,10 @@ if env == "unit-test":
     # Non carica nessun file, valori restano vuoti
     settings = Settings()
 
-elif env == "local-integrazione":
+elif env == "local-integration":
     settings = Settings(_env_file=".env.test")
 
-elif env == "test-integrazione":
+elif env == "test-integration":
     settings = Settings(_env_file=".env.integration")
 
 elif env == "produzione":

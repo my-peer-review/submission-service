@@ -1,74 +1,101 @@
 pipeline {
   agent any
 
-  /******************************
-   * UNIT TESTS (ENV=unit-test)
-   ******************************/
+  // Evita il checkout automatico (che falliva sulla pulizia) e lo gestiamo noi.
+  options {
+    skipDefaultCheckout(true)
+  }
+
   stages {
+
+    stage('Clean & Checkout') {
+      steps {
+        // rimuovi eventuali residui con permessi strani prima del checkout
+        sh '''
+          set -eux
+          # prova "soft"
+          rm -rf .pytest_cache || true
+          # fallback: usa un container root per pulire la cartella di lavoro
+          docker run --rm -v "$PWD:/ws" alpine:3.20 sh -c 'rm -rf /ws/.pytest_cache || true'
+        '''
+        deleteDir()
+        checkout scm
+      }
+    }
+
+    /******************************
+     * UNIT TESTS (ENV=unit-test)
+     ******************************/
     stage('Unit Tests') {
       environment {
         ENV = 'unit-test'
         IMAGE_NAME = 'assignments-pytest'
       }
-
       stages {
         stage('Build CI Image') {
           steps {
             echo "Costruzione immagine da Dockerfile.unit..."
-            deleteDir()
             sh '''
-              sh 'sudo rm -rf .pytest_cache || true'
-              docker build -t ${IMAGE_NAME} -f Dockerfile.unit .
+              set -eux
+              rm -rf .pytest_cache || true
+              docker build -t "${IMAGE_NAME}" -f Dockerfile.unit .
             '''
           }
         }
-
         stage('Run Python Unit Tests') {
           steps {
             echo "Avvio container CI per i unit-test..."
             sh '''
-              docker run --rm --user $(id -u):$(id -g) -e ENV="${ENV}" -v "${PWD}:/work" -w /work ${IMAGE_NAME} pytest -v test/pytest
+              set -eux
+              docker run --rm \
+                --user "$(id -u)":"$(id -g)" \
+                -e ENV="${ENV}" \
+                -v "${PWD}:/work" -w /work \
+                "${IMAGE_NAME}" pytest -v test/pytest
             '''
           }
         }
       }
     }
 
+    /************************************
+     * INTEGRATION TESTS (ENV=integration-test)
+     ************************************/
     stage('Integration Tests') {
       options {
         lock(resource: 'ports-for-test-assignment')
       }
       environment {
-        ENV = 'local-integrazione'
+        ENV = 'local-integration'
         COMPOSE_FILE = 'docker-compose.test.yml'
         TEST_SECRETS_PATH = '/home/jenkins-user/secrets/assignment-test'
         COMPOSE_PROJECT_NAME = "assignments-${env.BUILD_NUMBER}"
       }
       stages {
-
         stage('Setup environment') {
           steps {
             echo "🔧 Copio i secrets nella workspace..."
             sh '''
-              cp $TEST_SECRETS_PATH/.env.test .env.test
+              set -eux
+              cp "$TEST_SECRETS_PATH/.env.test" .env.test
               mkdir -p secrets
-              cp $TEST_SECRETS_PATH/public.pem secrets/public.pem
-              cp $TEST_SECRETS_PATH/private.pem secrets/private.pem
+              cp "$TEST_SECRETS_PATH/public.pem" secrets/public.pem
+              cp "$TEST_SECRETS_PATH/private.pem" secrets/private.pem
             '''
           }
         }
-
         stage('Build & start test environment') {
           steps {
             sh '''
-              docker compose -p $COMPOSE_PROJECT_NAME -f $COMPOSE_FILE up -d --build
+              set -eux
+              docker compose -p "$COMPOSE_PROJECT_NAME" -f "$COMPOSE_FILE" up -d --build
             '''
           }
         }
-
         stage('Run API Tests with Newman') {
           steps {
             sh '''
+              set -eux
               newman run ./test/postman/Assignments.postman_collection.json \
                 -e ./test/postman/Assignments.postman_environment.json \
                 --reporters cli,json
@@ -76,13 +103,14 @@ pipeline {
           }
         }
       }
-
       post {
         always {
           echo "Pulizia finale..."
-          sh 'docker compose -p "$COMPOSE_PROJECT_NAME" -f "$COMPOSE_FILE" down'
-          sh 'chmod -R u+rwX .pytest_cache || true'
-          sh 'rm -rf .pytest_cache || true'
+          sh '''
+            set -eux
+            docker compose -p "$COMPOSE_PROJECT_NAME" -f "$COMPOSE_FILE" down
+            rm -rf .pytest_cache || true
+          '''
           deleteDir()
         }
         success {
