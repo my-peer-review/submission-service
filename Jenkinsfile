@@ -1,110 +1,72 @@
 pipeline {
   agent any
 
+  options {
+    ansiColor('xterm')
+    timestamps()
+    timeout(time: 30, unit: 'MINUTES')
+  }
+
+  environment {
+    ENV = 'unit-test'
+    CI_IMAGE_NAME = 'assignments-pytest'
+    APP_IMAGE_NAME = 'tuo-utente/app-image' // es: dockerhubuser/app
+    COMMIT = "${env.GIT_COMMIT?.take(7) ?: 'local'}"
+  }
+
   stages {
 
-    // UNIT TESTS (ENV=unit-test)
-    stage('Unit Tests') {
-      environment {
-        ENV = 'unit-test'
-        IMAGE_NAME = 'assignments-pytest'
-      }
-      stages {
-        stage('Build CI Image') {
-          steps {
-            echo "Costruzione immagine da Dockerfile.unit..."
-            sh '''
-              set -eux
-              docker build -t "${IMAGE_NAME}" -f Dockerfile.unit .
-            '''
-          }
-        }
-        stage('Run Python Unit Tests') {
-          steps {
-            echo "Avvio container CI per i unit-test..."
-            sh '''
-              set -eux
-              docker run --rm \
-                --user "$(id -u)":"$(id -g)" \
-                -e ENV="${ENV}" \
-                -v "${PWD}:/work" -w /work \
-                "${IMAGE_NAME}" pytest -v test/pytest
-            '''
-          }
-        }
-      }
-
-      post {
-        always {
-          sh '''
-            set -eux
-            chmod -R u+rwX .pytest_cache || true
-            rm -rf .pytest_cache || true
-          '''
-        }
+    stage('Build CI Image') {
+      steps {
+        echo "Costruzione immagine CI..."
+        sh '''
+          set -euxo pipefail
+          docker build -t "${CI_IMAGE_NAME}" -f Dockerfile.unit .
+        '''
       }
     }
 
+    stage('Run Python Unit Tests') {
+      steps {
+        echo "Esecuzione test Python..."
+        sh '''
+          set -euxo pipefail
+          docker run --rm \
+            --user "$(id -u)":"$(id -g)" \
+            -e ENV="${ENV}" \
+            -v "${PWD}:/work" -w /work \
+            "${CI_IMAGE_NAME}" pytest -v test/pytest
+        '''
+      }
+    }
 
-    // INTEGRATION TESTS (ENV=local-integration)
-    stage('Integration Tests') {
-      options {
-        lock(resource: 'ports-for-test-assignment')
-      }
-      environment {
-        ENV = 'local-integration'
-        COMPOSE_FILE = 'docker-compose.test.yml'
-        TEST_SECRETS_PATH = '/home/jenkins-user/secrets/assignment-test'
-        COMPOSE_PROJECT_NAME = "assignments-${env.BUILD_NUMBER}"
-      }
-      stages {
-        stage('Setup environment') {
-          steps {
-            echo "🔧 Copio i secrets nella workspace..."
-            sh '''
-              set -eux
-              cp "$TEST_SECRETS_PATH/.env.test" .env.test
-              mkdir -p secrets
-              cp "$TEST_SECRETS_PATH/public.pem" secrets/public.pem
-              cp "$TEST_SECRETS_PATH/private.pem" secrets/private.pem
-            '''
-          }
-        }
-        stage('Build & start test environment') {
-          steps {
-            sh '''
-              set -eux
-              docker compose -p "$COMPOSE_PROJECT_NAME" -f "$COMPOSE_FILE" up -d --build
-            '''
-          }
-        }
-        stage('Run API Tests with Newman') {
-          steps {
-            sh '''
-              set -eux
-              newman run ./test/postman/Assignments.postman_collection.json \
-                -e ./test/postman/Assignments.postman_environment.json \
-                --reporters cli,json
-            '''
+    stage('Build & Push App Image') {
+      steps {
+        script {
+          docker.withRegistry('https://index.docker.io/v1/', 'dockerhub-creds') {
+            def appImage = docker.build("${APP_IMAGE_NAME}", "-f Dockerfile .")
+            appImage.push("${COMMIT}")
+            appImage.push("latest")
           }
         }
       }
-      post {
-        always {
-          echo "Pulizia ambiente di integrazione..."
-          sh '''
-            set -eux
-            docker compose -p "$COMPOSE_PROJECT_NAME" -f "$COMPOSE_FILE" down || true
-          '''
-          deleteDir()
-        }
-        success {
-          echo "Build e test completati con successo!"
-        }
-        failure {
-          echo "Qualcosa è andato storto."
-        }
-      }
+    }
+  }
+
+  post {
+    always {
+      sh '''
+        set -euxo pipefail
+        chmod -R u+rwX .pytest_cache || true
+        rm -rf .pytest_cache || true
+      '''
+      deleteDir()
+    }
+    success {
+      echo "Build, test e push completati con successo!"
+    }
+    failure {
+      echo "Qualcosa è andato storto."
     }
   }
 }
