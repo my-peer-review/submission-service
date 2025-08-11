@@ -13,7 +13,7 @@ from app.services import assignment as assignment_service
 router = APIRouter()
 
 RepoDep = Annotated[AssignmentRepo, Depends(get_repository)]
-UserDep = Annotated[UserContext,   Depends(get_current_user)]
+UserDep = Annotated[UserContext, Depends(get_current_user)]
 
 @router.post("/assignments", status_code=status.HTTP_201_CREATED)
 async def create_assignment_endpoint(
