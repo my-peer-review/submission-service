@@ -3,7 +3,8 @@ version: "3.9"
 services:
   assignment-service:
     build:
-      context: ./Dockerfile.integration
+      context: .
+      dockerfile: Dockerfile.integration
     ports:
       - "5050:5050"
     env_file:
