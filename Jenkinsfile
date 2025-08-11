@@ -10,6 +10,12 @@ pipeline {
         ENV = 'unit-test'
         IMAGE_NAME = 'assignments-pytest'
       }
+
+      steps {
+        sh 'sudo rm -rf .pytest_cache || true'
+        deleteDir()
+      }
+      
       stages {
         stage('Build CI Image') {
           steps {
