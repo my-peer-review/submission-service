@@ -24,7 +24,7 @@ pipeline {
           steps {
             echo "Avvio container CI per i unit-test..."
             sh '''
-              docker run --rm -e ENV="${ENV}" -v "${PWD}:/work" -w /work ${IMAGE_NAME} pytest -v test/pytest
+              docker run --rm --user $(id -u):$(id -g) -e ENV="${ENV}" -v "${PWD}:/work" -w /work ${IMAGE_NAME} pytest -v test/pytest
             '''
           }
         }
@@ -78,6 +78,8 @@ pipeline {
         always {
           echo "Pulizia finale..."
           sh 'docker compose -p "$COMPOSE_PROJECT_NAME" -f "$COMPOSE_FILE" down'
+          sh 'chmod -R u+rwX .pytest_cache || true'
+          sh 'rm -rf .pytest_cache || true'
           deleteDir()
         }
         success {
