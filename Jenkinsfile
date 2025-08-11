@@ -14,7 +14,6 @@ pipeline {
       steps {
         echo "Costruzione immagine CI..."
         sh '''
-          set -euxo pipefail
           docker build -t "${CI_IMAGE_NAME}" -f Dockerfile.unit .
         '''
       }
@@ -24,7 +23,6 @@ pipeline {
       steps {
         echo "Esecuzione test Python..."
         sh '''
-          set -euxo pipefail
           docker run --rm \
             --user "$(id -u)":"$(id -g)" \
             -e ENV="${ENV}" \
@@ -50,7 +48,6 @@ pipeline {
   post {
     always {
       sh '''
-        set -euxo pipefail
         chmod -R u+rwX .pytest_cache || true
         rm -rf .pytest_cache || true
       '''
