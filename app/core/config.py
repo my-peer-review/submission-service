@@ -1,7 +1,6 @@
 import os
 from pydantic_settings import BaseSettings
 
-
 class Settings(BaseSettings):
     env: str = "unit-test"
 
@@ -14,7 +13,6 @@ class Settings(BaseSettings):
     class Config:
         env_file = None  # di default
 
-
 # Leggi ENV
 env = os.getenv("ENV", "unit-test")
 
@@ -22,11 +20,8 @@ if env == "unit-test":
     # Non carica nessun file, valori restano vuoti
     settings = Settings()
 
-elif env == "local-integration":
-    settings = Settings(_env_file=".env.test")
-
 elif env == "test-integration":
-    settings = Settings(_env_file=".env.integration")
+    settings = Settings()
 
 elif env == "produzione":
     settings = Settings(_env_file=".env.prod")
