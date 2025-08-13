@@ -67,7 +67,7 @@ pipeline {
     always  {
       sh '''
         rm -rf .pytest_cache || true
-        sh 'sudo chown -R $(id -u):$(id -g) . || true'
+        sh sudo chown -R $(id -u):$(id -g) . || true
       '''
       deleteDir()
     }
