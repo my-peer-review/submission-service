@@ -65,7 +65,10 @@ pipeline {
     success { echo '✅ OK: unit, push (se PR→main) e integrazione passati.' }
     failure { echo '❌ KO: controlla i log (unit/push/integrazione).' }
     always  {
-      sh 'rm -rf .pytest_cache || true'
+      sh '''
+        chmod -R u+rwX . || true
+        rm -rf .pytest_cache || true
+      '''
       deleteDir()
     }
   }
