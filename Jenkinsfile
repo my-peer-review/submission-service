@@ -5,7 +5,7 @@ pipeline {
     // ---- config progetto ----
     ENV             = 'unit-test'
     CI_IMAGE_NAME   = 'assignments-pytest'
-    APP_IMAGE_NAME  = 'ale175/service-assignment'     // <user>/<repo>
+    APP_IMAGE_NAME  = 'ale175/service-assignment' 
     DOCKERHUB_CREDS = 'dockerhub-creds'               // ID credenziale Jenkins
 
     // job multibranch di integrazione (folder/repo/branch)
