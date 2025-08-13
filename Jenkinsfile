@@ -55,7 +55,6 @@ pipeline {
                 parameters: [
                   string(name: 'SERVICE_NAME', value: 'assignment'),
                   string(name: 'TRIGGER_TYPE', value: 'single')
-                  // Non serve IMAGE_TAG: il cluster usa :latest con imagePullPolicy: Always
                 ]
         }
       }
