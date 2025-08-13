@@ -17,7 +17,7 @@ pipeline {
             --user "$(id -u)":"$(id -g)" \
             -e ENV="unit-test" \
             -v "${PWD}:/work" -w /work \
-            "${CI_IMAGE_NAME}" pytest -v test/pytest --cache-dir=/tmp/pytest_cache
+            "${CI_IMAGE_NAME}" sh -c 'pytest -v test/pytest && rm -rf .pytest_cache'
         '''
       }
     }
