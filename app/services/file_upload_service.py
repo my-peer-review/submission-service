@@ -21,7 +21,6 @@ class UploadFileLike(Protocol):
 class FileUploadService:
     @staticmethod
     async def _iter_file(f: UploadFileLike, chunk_size: int = READ_CHUNK) -> AsyncIterator[bytes]:
-        """Legge l'UploadFile a chunk senza caricarlo in RAM."""
         while True:
             chunk = await f.read(chunk_size)
             if not chunk:
@@ -39,7 +38,6 @@ class FileUploadService:
         repo: SubmissionRepo,
         storage: BinaryStorage,
     ) -> list[FileMeta]:
-        """Carica i file su BinaryStorage e registra i metadati nella submission."""
         metas: list[FileMeta] = []
         for f in files:
             stored = await storage.upload(
@@ -54,10 +52,10 @@ class FileUploadService:
             )
             fm = FileMeta(
                 filename=stored.filename,
-                path=stored.uri,   # es. gridfs://uploads/<file_id>
+                path=stored.uri,
                 size=stored.size,
             )
             metas.append(fm)
-            # registra il file nella submission (DB dominio)
+
             await submissionService.add_file(submission_id, fm, user, repo)
         return metas
