@@ -8,11 +8,11 @@ class FileMeta(BaseModel):
     size: int
 
 class SubmissionCreate(BaseModel):
+    assignmentId: str
     studentId: str
     content: str
 
 class Submission(SubmissionCreate):
-    assignmentId: str
     submissionId: str
     createdAt: datetime
     files: List[FileMeta] = []
