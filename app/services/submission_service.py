@@ -19,13 +19,10 @@ class submissionService:
         user: UserContext,
         repo: SubmissionRepo
     ) -> str:
-        # Solo studenti creano le proprie consegne
         if not _is_student(user.role):
             raise PermissionError("Only students can create submissions")
-        # studentId arriva dal token; ignoriamo quello eventualmente passato nel body
         data.studentId = user.user_id
 
-        # Controlla se lo studente ha già consegnato per questo assignment
         already = await repo.find_for_assignment_and_student(assignment_id, user.user_id)
 
         if already:
