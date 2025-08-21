@@ -6,9 +6,9 @@ from app.schemas.submission import SubmissionCreate, Submission, FileMeta
 from app.schemas.context import UserContext
 
 from app.core.deps import get_repository, get_storage
-from app.core.auth import get_current_user
 
 from app.services.submission_service import submissionService
+from app.services.auth_service import AuthService
 from app.services.file_upload_service import FileUploadService
 
 from app.database.submission_repo import SubmissionRepo
@@ -17,8 +17,8 @@ from app.database.base import BinaryStorage
 router = APIRouter()
 
 RepoDep = Annotated[SubmissionRepo, Depends(get_repository)]
-UserDep = Annotated[UserContext, Depends(get_current_user)]
 StorageDep = Annotated[BinaryStorage, Depends(get_storage)]
+UserDep = Annotated[UserContext, Depends(AuthService.get_current_user)]
 
 import logging
 logger = logging.getLogger("uvicorn.error")
