@@ -6,7 +6,7 @@ class StoredFile(BaseModel):
     filename: str
     size: int
     content_type: Optional[str] = None
-    uri: str                      # es. gridfs://<bucket>/<id>
+    uri: str                  
     checksum: Optional[str] = None
     metadata: dict[str, Any] = {}
 

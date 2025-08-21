@@ -31,10 +31,9 @@ async def create_submission_for_assignment_endpoint(
     request: Request,                              # necessario per url_for
     content: Annotated[str, Form(..., alias="content")],
     assignment_id: Annotated[str, Form(..., alias="assignmentId")],
-    files: Annotated[Optional[List[UploadFile]], File()] = None,
+    files: Annotated[Optional[List[UploadFile]], File()] = None
 ):
     try:
-        # 1) Crea la submission
         payload = SubmissionCreate(
             assignmentId=assignment_id,
             studentId=user.user_id,
@@ -44,26 +43,36 @@ async def create_submission_for_assignment_endpoint(
             assignment_id, payload, user, repo
         )
 
-        # 2) Carica i file tramite il service (il DB salverà il path interno)
-        metas: list[FileMeta] = await FileUploadService.upload_files(
-            assignment_id=assignment_id,
-            submission_id=new_id,
-            files=files,
-            user=user,
-            repo=repo,
-            storage=storage,
-        )
+        safe_files: List[UploadFile] = [
+            f for f in (files or [])
+            if f is not None and getattr(f, "filename", None) not in (None, "")
+        ]
 
-        # 3) Payload pubblico: NIENTE path/size/fileId
+        if safe_files:
+            metas: list[FileMeta] = await FileUploadService.upload_files(
+                assignment_id=assignment_id,
+                submission_id=new_id,
+                files=files,
+                user=user,
+                repo=repo,
+                storage=storage,
+            )
+        else:
+            metas = []
+
         files_payload: list[dict] = []
         for m in metas:
-            # ricava internamente l'id solo per costruire l'URL
-            file_id = m.path.split("/")[-1] if m.path.startswith("gridfs://") else None
+            path = getattr(m, "path", None)
+            filename = getattr(m, "filename", None)
+
+            file_id = path.split("/")[-1] if isinstance(path, str) and path.startswith("gridfs://") else None
             download_url = str(request.url_for("download_file", file_id=file_id)) if file_id else None
-            files_payload.append({
-                "filename": m.filename,
-                "downloadUrl": download_url,
-            })
+
+            if filename and download_url:
+                files_payload.append({
+                    "filename": filename,
+                    "downloadUrl": download_url,
+                })
 
         location = f"/api/v1/submissions/{assignment_id}/{new_id}"
         return JSONResponse(
@@ -72,7 +81,7 @@ async def create_submission_for_assignment_endpoint(
                 "message": "submission created",
                 "submissionId": new_id,
                 "assignmentId": assignment_id,
-                "files": files_payload,   # <-- solo i campi pubblici
+                "files": files_payload, 
             },
             headers={"Location": location},
         )

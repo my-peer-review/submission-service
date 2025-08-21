@@ -1,11 +1,14 @@
 # app/repositories/mongo_submission.py
 from datetime import datetime, timezone
 from typing import Sequence, Optional
+import random
 from motor.motor_asyncio import AsyncIOMotorDatabase
-from uuid import uuid4
 
 from app.database.submission_repo import SubmissionRepo
 from app.schemas.submission import Submission, SubmissionCreate, FileMeta
+
+def create_submission_id() -> str:
+    return f"sm-{random.randint(0, 99999):05d}"
 
 class MongosubmissionRepository(SubmissionRepo):
     def __init__(self, db: AsyncIOMotorDatabase):
@@ -22,7 +25,7 @@ class MongosubmissionRepository(SubmissionRepo):
         )
 
     async def create(self, data: SubmissionCreate, *, assignment_id: str, student_id: str) -> str:
-        new_id = str(uuid4())
+        new_id = create_submission_id()
         doc = {
             "submissionId": new_id,
             "createdAt": datetime.now(timezone.utc),
