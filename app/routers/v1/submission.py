@@ -34,7 +34,6 @@ async def create_submission_for_assignment_endpoint(
     files: Annotated[Optional[List[UploadFile]], File(None)] = None,
 ):
     try:
-        # 1) Crea la submission
         payload = SubmissionCreate(
             assignmentId=assignment_id,
             studentId=user.user_id,
