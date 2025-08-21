@@ -31,7 +31,7 @@ async def create_submission_for_assignment_endpoint(
     request: Request,                              # necessario per url_for
     content: Annotated[str, Form(..., alias="content")],
     assignment_id: Annotated[str, Form(..., alias="assignmentId")],
-    files: Annotated[Optional[List[UploadFile]], File(None)] = None,
+    files: Annotated[Optional[List[UploadFile]], File()] = None
 ):
     try:
         payload = SubmissionCreate(
