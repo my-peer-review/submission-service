@@ -8,7 +8,7 @@ from app.database.submission_repo import SubmissionRepo
 from app.schemas.submission import Submission, SubmissionCreate, FileMeta
 
 def create_submission_id() -> str:
-    return f"as-{random.randint(0, 99999):05d}"
+    return f"sm-{random.randint(0, 99999):05d}"
 
 class MongosubmissionRepository(SubmissionRepo):
     def __init__(self, db: AsyncIOMotorDatabase):
