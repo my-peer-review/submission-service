@@ -9,6 +9,7 @@ from app.database.mongo_submissions import MongosubmissionRepository
 from app.database.gridfs import GridFSStorage
 from app.routers.v1 import health
 from app.routers.v1 import submission
+from app.services.publisher_service import SubmissionPublisher
 
 def create_app() -> FastAPI:
     @asynccontextmanager
@@ -16,17 +17,38 @@ def create_app() -> FastAPI:
         client = AsyncIOMotorClient(settings.mongo_uri, uuidRepresentation="standard")
         db = client[settings.mongo_db_name]
 
-        # Repo esistente
+        # Mongo repository
         repo = MongosubmissionRepository(db)
         await repo.ensure_indexes()
         app.state.submission_repo = repo
 
-        # NEW: GridFS bucket + storage minimale
+        # GridFS bucket
         bucket = AsyncIOMotorGridFSBucket(db, bucket_name="uploads", chunk_size_bytes=255 * 1024)
         app.state.binary_storage = GridFSStorage(bucket=bucket, bucket_name="uploads")
 
-        yield
-        client.close()
+        # --- RabbitMQ Publisher ---
+        publisher = SubmissionPublisher(
+            rabbitmq_url=settings.rabbitmq_url,
+            heartbeat= 30,
+            review_exchange="elearning.submission-review",
+            review_routing_key="submission.review",
+        )
+        # apri la connessione e dichiara exchange/queue temporanea
+        await publisher.connect(max_retries=10, delay=5)
+        app.state.submission_publisher = publisher
+
+        try:
+            # avvio completato
+            yield
+        finally:
+            # --- Shutdown pulito ---
+            client.close()
+            # chiusura publisher (async)
+            try:
+                await app.state.submission_publisher.close()
+            except Exception:
+                # opzionale: loggare l’eccezione
+                pass
 
     app = FastAPI(
         title="submission Microservice",

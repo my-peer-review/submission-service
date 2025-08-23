@@ -9,3 +9,4 @@ PyJWT
 cryptography
 aiofiles
 python-multipart
+aio-pika
