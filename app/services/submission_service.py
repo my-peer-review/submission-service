@@ -24,12 +24,12 @@ class submissionService:
         data.studentId = user.user_id
 
         already = await repo.find_for_assignment_and_student(assignment_id, user.user_id)
-
         if already:
             raise PermissionError("You have already submitted for this assignment")
         else:
             return await repo.create(data, assignment_id=assignment_id, student_id=user.user_id)
-
+        
+    
     @staticmethod
     async def add_file(submission_id: str, file_meta: FileMeta, user: UserContext, repo: SubmissionRepo) -> bool:
         if not _is_student(user.role):
