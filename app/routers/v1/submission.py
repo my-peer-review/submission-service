@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Response, Request
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -62,12 +62,19 @@ async def create_submission_for_assignment_endpoint(
         else:
             metas = []
 
+        now = datetime.now().astimezone()
         try:
             await publisher.publish_submission_delivered(
-                submission_id=new_id,
-                assignment_id=assignment_id,
-                student_id = user.user_id,
-                delivered_at = datetime.now()
+                submissionId = new_id,
+                assignmentId = assignment_id,
+                studentId = user.user_id,
+                deliveredAt = now
+            )
+            await publisher.publish_submission_report(
+                submissionId = new_id,
+                assignmentId = assignment_id,
+                studentId = user.user_id,
+                deliveredAt = now
             )
         except Exception as e:
             admin = UserContext(user_id="admin", role= "teacher")

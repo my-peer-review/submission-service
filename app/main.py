@@ -30,25 +30,22 @@ def create_app() -> FastAPI:
         publisher = SubmissionPublisher(
             rabbitmq_url=settings.rabbitmq_url,
             heartbeat= 30,
-            review_exchange="elearning.submission-review",
-            review_routing_key="submission.review",
+            review_exchange="elearning.submissions-consegnate",
+            review_routing_key="submissions.reviews",
+            report_exchange = "elearning.reports",
+            report_routing_key = "submissions.reports",
         )
-        # apri la connessione e dichiara exchange/queue temporanea
+
         await publisher.connect(max_retries=10, delay=5)
         app.state.submission_publisher = publisher
 
         try:
-            # avvio completato
             yield
         finally:
-            # --- Shutdown pulito ---
-            client.close()
-            # chiusura publisher (async)
             try:
-                await app.state.submission_publisher.close()
-            except Exception:
-                # opzionale: loggare l’eccezione
-                pass
+                await publisher.close()
+            finally:
+                client.close()
 
     app = FastAPI(
         title="submission Microservice",
